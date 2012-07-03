@@ -21,7 +21,7 @@ class ToneInstrument implements Instrument
     // create new instances of any UGen objects as necessary
     modulator = new Oscil( modulatorFrequency, modulatorAmplitude, Waves.SINE);
     
-    This is a git change that crashes
+    
     
     carrier = new FMCarrier( carrierFrequency, carrierAmplitude, Waves.SINE);//, freqMod1);
     
