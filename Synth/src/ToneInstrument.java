@@ -7,21 +7,24 @@ class ToneInstrument implements Instrument
 {
   // create all variables that must be used througout the class
   FMCarrier carrier;
-  Oscil modulator;
+  Oscil[] modulators;
+  Oscil modulator1;
+  Oscil modulator2;
   //UGenInput modulator;
   ADSR  carrierADSR, modulatorADSR;
   AudioOutput out;
   
   // constructor for this instrument
-  ToneInstrument( float carrierFrequency, float carrierAmplitude, float modulatorFrequency, float modulatorAmplitude, AudioOutput output )
+  ToneInstrument( float carrierFrequency, float carrierAmplitude, float[] initialModulatorParameters, AudioOutput output )
   {
     // equate class variables to constructor variables as necessary
     out = output;
     
     // create new instances of any UGen objects as necessary
-    modulator = new Oscil( modulatorFrequency, modulatorAmplitude, Waves.SINE);
+    modulators = new Oscil[Driver.MAX_NUM_MODULATORS];
     
-    
+    for(int i = 0; i < Driver.numModulators; i++)
+    	modulators[i] = new Oscil( initialModulatorParameters[2*i + 0], initialModulatorParameters[2*i + 1], Waves.SINE);
     
     carrier = new FMCarrier( carrierFrequency, carrierAmplitude, Waves.SINE);//, freqMod1);
     
@@ -32,10 +35,11 @@ class ToneInstrument implements Instrument
     //ADSR(float maxAmp, float attTime, float decTime, float susLvl, float relTime) 
     carrierADSR = new ADSR(1f, 0.05f, 0.1f, 0.4f, 0.01f);
     //modulatorADSR = new ADSR()
-    
-    
-    
-    modulator.patch(carrier.modulator);
+
+    //test should be removed
+    for(int i = 0; i < Driver.numModulators; i++)
+    	modulators[i].patch(carrier.modulators[i]);
+
     carrier.patch(carrierADSR);
     //freqMod1.patch(sineOsc.modulator);
     // patch everything together up to the final output

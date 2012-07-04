@@ -15,8 +15,8 @@ public class FMCarrier extends UGen
 	 */
 	public UGenInput amplitude;
 	
-	//the modulating waveform
-	public UGenInput modulator;
+	//the modulating waveforms
+	public UGenInput[] modulators;
 	
 	
 	// the waveform we will oscillate over
@@ -120,8 +120,13 @@ public class FMCarrier extends UGen
         offset = new UGenInput(InputType.CONTROL);
         offset.setLastValue( 0.f );
         
-        modulator = new UGenInput(InputType.CONTROL);
-        modulator.setLastValue(0.f);
+        modulators = new UGenInput[Driver.numModulators];
+        
+        for(int i = 0; i < Driver.numModulators; i++)
+        {
+        	modulators[i] = new UGenInput(InputType.CONTROL);
+        	modulators[i].setLastValue(0.f);
+        }
 		
     carrier_wave = waveform;
 		step = 0f;
@@ -226,7 +231,13 @@ public class FMCarrier extends UGen
 		//seb edit
 		// temporary step location with phase offset.
 		//float tmpStep = step + phase.getLastValue();
-		float tmpStep = step + modulator.getLastValue() + phase.getLastValue();
+		//find the sum of all the modulators for DFM as opposed to CFM
+		float modulatorSum = 0;
+		for(int i = 0; i < Driver.numModulators; i++)
+			modulatorSum += modulators[i].getLastValue();
+		
+		float tmpStep = step + modulatorSum + phase.getLastValue();
+		//TODO this is 
 		
 		// don't be less than zero
 		if ( tmpStep < 0.f )

@@ -1,6 +1,7 @@
 import java.io.*;
 import java.applet.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 import ddf.minim.*;
 import ddf.minim.spi.*; // for AudioRecordingStream
@@ -13,6 +14,9 @@ public class Driver extends PApplet {
 	static final float[] modulationFrequencyMultipliers = {0.25f, 0.5f, 0.75f, 1f, 2f, 3f, 4f, 6f, 8f};
 	static final float[] modulationAmplitudes = {0f, 0.01f, 0.1f, 0.2f, 0.5f, 1f, 2f, 4f, 8f};
 	
+	static final boolean MUTE_ALL = false;
+	static final int MAX_NUM_MODULATORS = 5;
+	
 	// create all of the variables that will need to be accessed in
 	// more than one methods (setup(), draw(), stop()).
 	Minim minim;
@@ -20,6 +24,14 @@ public class Driver extends PApplet {
 	
 	ToneInstrument instr;
 	Button button;
+	Label modLabel;
+	
+	//which modulator should be altered by moving the mouse?
+	int modulatorToChange = 0;
+	static int numModulators = 2;	//this needs to be set by hand at the moment
+	
+	//each modulator parameter is passed in as an array of [mod1Frequency, mod1Amplitude, mod2Frequency, ...]
+	float[] initialModulatorParameters = {440f, 0.2f, 360f, 0.2f};
 	
 	//fft = new FFT()
 
@@ -33,8 +45,12 @@ public class Driver extends PApplet {
 	  // initialize the minim and out objects
 	  minim = new Minim( this );
 	  out = minim.getLineOut( Minim.MONO, 2048 );
+	  
+	  if(MUTE_ALL)
+		  out.mute();
   
-	  instr = new ToneInstrument(440f, 1f, 440f, 0.2f, out);
+	  
+	  instr = new ToneInstrument(440f, 1f, initialModulatorParameters, out);
 	  
 	  
 	  //for making the sweep of the space
@@ -43,6 +59,16 @@ public class Driver extends PApplet {
 	  sineOsc.patch(instr.carrier.frequency);
 	  
 	  out.playNote(0f, 10000f, instr);
+	  
+	  modLabel = new Label("Changing modulator #" + modulatorToChange);
+	  modLabel.setBounds(25, 210, 200, 30);
+	  modLabel.setBackground(Color.BLACK);
+	  modLabel.setForeground(Color.WHITE);
+	  add(modLabel);
+	  
+	  //add(new JLabel("Hi you"));
+	  
+	  
 	  
 	  button = new Button("Harmonic");
 	  button.setBounds(250, 300, 80, 30);
@@ -150,10 +176,35 @@ public class Driver extends PApplet {
 		//map(float value, float inLow, float inHigh, float outLow, float outHigh)
 		//the horizontal mouse location changes the frequency of the modulator
 		//by selecting a value from the array of frequency multipliers
-		//instr.modulator.setFrequency(instr.carrier.frequency.getLastValue() * modulationFrequencyMultipliers[(int) (map((float) mouseX, 0f, (float) width, 0f, (float) modulationFrequencyMultipliers.length))]);
+		/*
+		instr.modulator.setFrequency(instr.carrier.frequency.getLastValue() * modulationFrequencyMultipliers[(int) (map((float) mouseX, 0f, (float) width, 0f, (float) modulationFrequencyMultipliers.length))]);
 		
 		//instr.modulator.setAmplitude(modulationAmplitudes[modulationAmplitudes.length - 1 - (int) (map((float) mouseY, 0f, (float) height, 0f, (float) modulationAmplitudes.length))]);
+		*/
+	}
+	
+	boolean[] keys = new boolean[526];
+	
+	public void keyPressed()
+	{
+		keys[keyCode] = true;
+		System.out.println(KeyEvent.getKeyText(keyCode));
+	}
+	
+	public void mousePressed()
+	{
+		if (mouseButton == LEFT)
+		{
+			modulatorToChange++;
+			modulatorToChange %= numModulators;
+			modLabel.setText("Changing modulator #" + modulatorToChange);
+			
+			System.out.println(modulatorToChange);
+		}
+		else
+		{
+			System.out.println("Mouse pressed at (" + mouseEvent.getX() + ", " + mouseEvent.getY() + ")");
+		}
+			
 	}
 }
-
-
